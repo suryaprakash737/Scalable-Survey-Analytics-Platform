@@ -1,6 +1,6 @@
 // Jenkins CI/CD pipeline for Student Survey application - SWE 645 Assignment 3
 // Team: Prakash, Jaya Krishna, Karthik Reddy
-// Builds Docker images for frontend and backend, pushes to Docker Hub, then deploys to Kubernetes cluster
+// Builds Docker images for frontend and backend, then deploys to local Kubernetes cluster
 pipeline {
     agent any
     
@@ -43,23 +43,6 @@ pipeline {
             }
         }
         
-        stage('Push to Docker Hub') {
-            steps {
-                echo '========== Pushing Images to Docker Hub =========='
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_CREDENTIALS_ID}") {
-                        // Push backend images
-                        docker.image("${BACKEND_IMAGE}:${env.BUILD_NUMBER}").push()
-                        docker.image("${BACKEND_IMAGE}:latest").push()
-                        
-                        // Push frontend images
-                        docker.image("${FRONTEND_IMAGE}:${env.BUILD_NUMBER}").push()
-                        docker.image("${FRONTEND_IMAGE}:latest").push()
-                    }
-                }
-            }
-        }
-        
         stage('Deploy MySQL to Kubernetes') {
             steps {
                 echo '========== Deploying MySQL to Kubernetes =========='
@@ -75,7 +58,6 @@ pipeline {
                 echo '========== Deploying Backend to Kubernetes =========='
                 script {
                     bat 'kubectl apply -f k8s/backend-deployment.yaml'
-                    bat 'kubectl set image deployment/backend-deployment backend=${BACKEND_IMAGE}:latest'
                     bat 'kubectl rollout status deployment/backend-deployment --timeout=300s'
                 }
             }
@@ -86,7 +68,6 @@ pipeline {
                 echo '========== Deploying Frontend to Kubernetes =========='
                 script {
                     bat 'kubectl apply -f k8s/frontend-deployment.yaml'
-                    bat 'kubectl set image deployment/frontend-deployment frontend=${FRONTEND_IMAGE}:latest'
                     bat 'kubectl rollout status deployment/frontend-deployment --timeout=300s'
                 }
             }
