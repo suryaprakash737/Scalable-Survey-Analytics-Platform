@@ -1,0 +1,4 @@
+# Backend service configuration (consolidated in backend-deployment.yaml).
+# This file is kept for reference, but the service is defined in backend-deployment.yaml.
+# Service is defined inline in the deployment file using YAML document separator (---).
+

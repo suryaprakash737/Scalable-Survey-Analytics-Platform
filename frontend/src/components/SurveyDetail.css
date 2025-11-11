@@ -1,0 +1,129 @@
+.survey-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.survey-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.survey-detail-header h2 {
+  color: #333;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.btn-close:hover {
+  background-color: #f0f0f0;
+}
+
+.survey-detail-content {
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.detail-section {
+  margin-bottom: 30px;
+}
+
+.detail-section h3 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4CAF50;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.detail-item span {
+  color: #333;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.detail-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.detail-actions .btn-edit {
+  background-color: #FF9800;
+  color: white;
+}
+
+.detail-actions .btn-edit:hover {
+  background-color: #F57C00;
+}
+
+.detail-actions .btn-delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.detail-actions .btn-delete:hover {
+  background-color: #d32f2f;
+}
+
+.detail-actions .btn-secondary {
+  background-color: #757575;
+  color: white;
+}
+
+.detail-actions .btn-secondary:hover {
+  background-color: #616161;
+}
+
+
+

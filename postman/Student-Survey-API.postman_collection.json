@@ -1,0 +1,222 @@
+{
+	"info": {
+		"_postman_id": "student-survey-api-collection",
+		"name": "Student Survey API",
+		"description": "Postman collection for testing Student Survey application REST API endpoints. Includes all CRUD operations for survey management.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CREATE Survey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set(\"survey_id\", jsonData.id);",
+							"    console.log(\"Survey created with ID: \" + jsonData.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"street_address\": \"123 Main St\",\n  \"city\": \"Fairfax\",\n  \"state\": \"VA\",\n  \"zip\": \"22030\",\n  \"telephone\": \"703-555-0123\",\n  \"email\": \"john.doe@example.com\",\n  \"date_of_survey\": \"2024-11-04\",\n  \"liked_most\": [\"students\", \"campus\", \"atmosphere\"],\n  \"interested_in\": \"friends\",\n  \"recommendation\": \"Very Likely\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/surveys",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"surveys"
+					]
+				},
+				"description": "Create a new student survey. All fields are required. The response will include the created survey with an auto-generated ID."
+			},
+			"response": []
+		},
+		{
+			"name": "GET All Surveys",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/surveys",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"surveys"
+					]
+				},
+				"description": "Retrieve all student surveys from the database. Returns an array of survey objects."
+			},
+			"response": []
+		},
+		{
+			"name": "GET Survey by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/surveys/{{survey_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"surveys",
+						"{{survey_id}}"
+					]
+				},
+				"description": "Retrieve a specific survey by its ID. The survey_id variable is automatically set when creating a new survey, or can be manually updated."
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE Survey",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"street_address\": \"456 Oak Avenue\",\n  \"city\": \"Fairfax\",\n  \"state\": \"VA\",\n  \"zip\": \"22031\",\n  \"telephone\": \"703-555-0456\",\n  \"email\": \"john.doe.updated@example.com\",\n  \"date_of_survey\": \"2024-11-04\",\n  \"liked_most\": [\"students\", \"location\", \"sports\"],\n  \"interested_in\": \"Internet\",\n  \"recommendation\": \"Likely\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/surveys/{{survey_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"surveys",
+						"{{survey_id}}"
+					]
+				},
+				"description": "Update an existing survey by ID. All fields are optional in the request body - only include fields you want to update. Uses the survey_id variable."
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE Survey",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/surveys/{{survey_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"surveys",
+						"{{survey_id}}"
+					]
+				},
+				"description": "Delete a survey by its ID. This operation cannot be undone. Uses the survey_id variable."
+			},
+			"response": []
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Health check endpoint to verify the API is running and accessible."
+			},
+			"response": []
+		},
+		{
+			"name": "Root Endpoint",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Root endpoint that returns API information and version."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "survey_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
+

@@ -1,0 +1,4 @@
+# Frontend service configuration (consolidated in frontend-deployment.yaml).
+# This file is kept for reference, but the service is defined in frontend-deployment.yaml.
+# Service is defined inline in the deployment file using YAML document separator (---).
+
