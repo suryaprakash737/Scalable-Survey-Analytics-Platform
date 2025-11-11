@@ -1,101 +1,120 @@
-// Jenkins CI/CD pipeline for Student Survey application.
-// Builds Docker images for frontend and backend, then deploys to Kubernetes cluster.
+// Jenkins CI/CD pipeline for Student Survey application - SWE 645 Assignment 3
+// Team: Prakash, Jaya Krishna, Karthik Reddy
+// Builds Docker images for frontend and backend, pushes to Docker Hub, then deploys to Kubernetes cluster
 pipeline {
     agent any
     
     environment {
-        DOCKER_REGISTRY = 'your-docker-registry'  // Update with your Docker registry if using remote registry
-        BACKEND_IMAGE = 'student-survey-backend'
-        FRONTEND_IMAGE = 'student-survey-frontend'
-        // KUBECONFIG = credentials('kubeconfig')  // Uncomment if using kubeconfig credentials
-        // Ensure kubectl is configured on Jenkins node or set KUBECONFIG environment variable
+        DOCKER_HUB_REPO = 'suryaprakashuppalapati'
+        BACKEND_IMAGE = "${DOCKER_HUB_REPO}/student-survey-backend"
+        FRONTEND_IMAGE = "${DOCKER_HUB_REPO}/student-survey-frontend"
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
     }
     
     stages {
         stage('Checkout') {
             steps {
+                echo '========== Checking out code from GitHub =========='
                 checkout scm
             }
         }
         
-        stage('Build Backend') {
+        stage('Build Backend Image') {
             steps {
+                echo '========== Building Backend Docker Image =========='
                 dir('backend') {
                     script {
-                        def backendImage = docker.build("${BACKEND_IMAGE}:${env.BUILD_NUMBER}")
-                        docker.tag("${BACKEND_IMAGE}:${env.BUILD_NUMBER}", "${BACKEND_IMAGE}:latest")
-                        // Push to registry if configured
-                        // docker.withRegistry("https://${DOCKER_REGISTRY}") {
-                        //     backendImage.push("${env.BUILD_NUMBER}")
-                        //     backendImage.push("latest")
-                        // }
+                        docker.build("${BACKEND_IMAGE}:${env.BUILD_NUMBER}")
+                        docker.build("${BACKEND_IMAGE}:latest")
                     }
                 }
             }
         }
         
-        stage('Build Frontend') {
+        stage('Build Frontend Image') {
             steps {
+                echo '========== Building Frontend Docker Image =========='
                 dir('frontend') {
                     script {
-                        def frontendImage = docker.build("${FRONTEND_IMAGE}:${env.BUILD_NUMBER}")
-                        docker.tag("${FRONTEND_IMAGE}:${env.BUILD_NUMBER}", "${FRONTEND_IMAGE}:latest")
-                        // Push to registry if configured
-                        // docker.withRegistry("https://${DOCKER_REGISTRY}") {
-                        //     frontendImage.push("${env.BUILD_NUMBER}")
-                        //     frontendImage.push("latest")
-                        // }
+                        docker.build("${FRONTEND_IMAGE}:${env.BUILD_NUMBER}")
+                        docker.build("${FRONTEND_IMAGE}:latest")
                     }
                 }
             }
         }
         
-        stage('Deploy to Kubernetes') {
+        stage('Push to Docker Hub') {
             steps {
+                echo '========== Pushing Images to Docker Hub =========='
                 script {
-                    // Verify kubectl is available
-                    sh 'kubectl version --client || exit 1'
-                    
-                    // Apply all Kubernetes manifests (MySQL first, then backend, then frontend)
-                    sh """
-                        kubectl apply -f k8s/mysql-deployment.yaml
-                        kubectl wait --for=condition=ready pod -l app=mysql --timeout=300s || true
-                    """
-                    
-                    sh """
-                        kubectl apply -f k8s/backend-deployment.yaml
-                    """
-                    
-                    sh """
-                        kubectl apply -f k8s/frontend-deployment.yaml
-                    """
-                    
-                    // Update image tags if needed (for rolling updates)
-                    sh """
-                        kubectl set image deployment/backend-deployment backend=${BACKEND_IMAGE}:latest --namespace=default || true
-                        kubectl set image deployment/frontend-deployment frontend=${FRONTEND_IMAGE}:latest --namespace=default || true
-                    """
-                    
-                    // Wait for deployments to be ready
-                    sh """
-                        kubectl rollout status deployment/backend-deployment --timeout=5m
-                        kubectl rollout status deployment/frontend-deployment --timeout=5m
-                    """
+                    docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_CREDENTIALS_ID}") {
+                        // Push backend images
+                        docker.image("${BACKEND_IMAGE}:${env.BUILD_NUMBER}").push()
+                        docker.image("${BACKEND_IMAGE}:latest").push()
+                        
+                        // Push frontend images
+                        docker.image("${FRONTEND_IMAGE}:${env.BUILD_NUMBER}").push()
+                        docker.image("${FRONTEND_IMAGE}:latest").push()
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy MySQL to Kubernetes') {
+            steps {
+                echo '========== Deploying MySQL to Kubernetes =========='
+                script {
+                    bat 'kubectl apply -f k8s/mysql-deployment.yaml'
+                    bat 'kubectl wait --for=condition=ready pod -l app=mysql --timeout=300s || exit 0'
+                }
+            }
+        }
+        
+        stage('Deploy Backend to Kubernetes') {
+            steps {
+                echo '========== Deploying Backend to Kubernetes =========='
+                script {
+                    bat 'kubectl apply -f k8s/backend-deployment.yaml'
+                    bat 'kubectl set image deployment/backend-deployment backend=${BACKEND_IMAGE}:latest'
+                    bat 'kubectl rollout status deployment/backend-deployment --timeout=300s'
+                }
+            }
+        }
+        
+        stage('Deploy Frontend to Kubernetes') {
+            steps {
+                echo '========== Deploying Frontend to Kubernetes =========='
+                script {
+                    bat 'kubectl apply -f k8s/frontend-deployment.yaml'
+                    bat 'kubectl set image deployment/frontend-deployment frontend=${FRONTEND_IMAGE}:latest'
+                    bat 'kubectl rollout status deployment/frontend-deployment --timeout=300s'
+                }
+            }
+        }
+        
+        stage('Verify Deployment') {
+            steps {
+                echo '========== Verifying Kubernetes Deployment =========='
+                script {
+                    bat '''
+                        kubectl get pods
+                        kubectl get services
+                        kubectl get deployments
+                    '''
                 }
             }
         }
         
         stage('Health Check') {
             steps {
+                echo '========== Running Health Checks =========='
                 script {
-                    // Wait for services to be ready
-                    sleep(time: 30, unit: 'SECONDS')
-                    
-                    // Check backend health
-                    sh """
+                    sleep(time: 10, unit: 'SECONDS')
+                    bat '''
+                        kubectl get pods -l app=mysql
                         kubectl get pods -l app=backend
                         kubectl get pods -l app=frontend
-                    """
+                    '''
                 }
             }
         }
@@ -103,17 +122,19 @@ pipeline {
     
     post {
         success {
-            echo 'Pipeline succeeded!'
+            echo '=========================================='
+            echo 'Pipeline completed successfully!'
+            echo 'Application deployed to Kubernetes'
+            echo 'Access at: http://localhost'
+            echo '=========================================='
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '=========================================='
+            echo 'Pipeline failed! Check logs for details.'
+            echo '=========================================='
         }
         always {
-            // Clean up workspace or perform cleanup tasks
-            echo 'Pipeline completed.'
+            echo 'Pipeline execution completed.'
         }
     }
 }
-
-
-
