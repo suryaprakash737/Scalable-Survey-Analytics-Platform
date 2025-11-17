@@ -8,6 +8,35 @@
 - Jaya Krishna Gobbila (G01512906)
 - Karthik Reddy Sanvelly (G01503115)
 
+## Team Member Contributions
+
+### Suryaprakash Uppalapati
+
+- FastAPI backend development with SQLModel/SQLAlchemy ORM
+- MySQL database schema design and integration
+- Kubernetes deployment manifests (backend, frontend, MySQL)
+- Jenkins CI/CD pipeline configuration and setup
+- Docker containerization for backend and frontend
+- Documentation and video demonstration
+
+### Jaya Krishna Gobbila
+
+- React.js frontend development and component architecture
+- Survey form implementation with validation
+- CRUD operations integration with backend APIs
+- Frontend Docker configuration and nginx setup
+- Testing and debugging across all application layers
+- README documentation and setup instructions
+
+### Karthik Reddy Sanvelly
+
+- Kubernetes cluster configuration and management
+- Database connection and environment configuration
+- CI/CD pipeline testing and optimization
+- Application deployment and health monitoring
+- Documentation of deployment procedures
+- Troubleshooting and bug fixes across the stack
+
 ## Project Overview
 
 This application is a full-stack student survey system that allows prospective students to submit feedback about their campus visit. The application implements CRUD operations to manage survey data with the following features:
@@ -48,13 +77,13 @@ This application is a full-stack student survey system that allows prospective s
 - **Update**: Edit existing surveys
 - **Delete**: Remove surveys
 
-## Kubernetes Deployment URL
+## Deployment Information
 
-[Your Application URL will go here after deployment]
+**Application URL:** http://localhost  
+**Jenkins Pipeline URL:** http://localhost:8080/job/student-survey-pipeline/  
+**GitHub Repository:** https://github.com/suryaprakash737/swe645-hw3
 
-Example: http://34.123.45.67:80 or http://your-loadbalancer-url
-
-**Note:** This URL will be available after deploying to Kubernetes cluster.
+**Note:** Application is deployed on a local Kubernetes cluster using Docker Desktop with MySQL running inside Kubernetes (not AWS RDS).
 
 ## Tech Stack
 
@@ -312,7 +341,7 @@ This option uses AWS-managed MySQL database.
    kubectl apply -f k8s/backend-deployment.yaml
    ```
 
-**Current Configuration:** This project is set up for Option A by default. To switch to Option B, skip the `mysql-deployment.yaml` step and update the backend `DATABASE_URL` as shown above.
+**Current Configuration:** The deployed environment for this assignment uses Option A (MySQL running in Kubernetes). Option B is provided to document how the system could be configured per assignment instructions, but it is not currently in use. To switch to Option B, skip the `mysql-deployment.yaml` step and update the backend `DATABASE_URL` as shown above.
 
 ## Deployment
 
@@ -1390,7 +1419,7 @@ swe645-hw3/
 
 ## Video Demonstration
 
-[Include link to video or mention that video is included in submission]
+https://youtu.be/vy8HQfPErLA
 
 ## References
 
@@ -1402,12 +1431,3 @@ swe645-hw3/
 - Jenkins Documentation: https://www.jenkins.io/doc/
 - Postman Documentation: https://www.postman.com/
 
-## License
-
-[Add your license information if applicable]
-
----
-
-**Assignment**: SWE 645 - Homework 3  
-**Course**: Full Stack Application Development  
-**Institution**: [Your Institution]
