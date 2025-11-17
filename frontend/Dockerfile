@@ -1,5 +1,9 @@
-# Dockerfile for building the Student Survey frontend container.
-# Multi-stage build that compiles React app and serves it with nginx.
+# Dockerfile for React Frontend
+# Author: Suryaprakash
+        # Jaya Krishna
+        # Karthik Reddy
+
+# Build stage
 FROM node:18-alpine as build
 
 WORKDIR /app
@@ -8,9 +12,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
-# Copy source code
+# Copy application files
 COPY . .
 
 # Build the application
@@ -22,7 +26,7 @@ FROM nginx:alpine
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built files from build stage
+# Copy built application from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Expose port
@@ -30,6 +34,3 @@ EXPOSE 80
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
-
-
-

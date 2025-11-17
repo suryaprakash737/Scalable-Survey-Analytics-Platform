@@ -1,78 +1,91 @@
-"""
-Database models for Student Survey application using SQLModel.
-Defines the Survey model with all required fields and validation enums.
-"""
-from sqlmodel import SQLModel, Field, Column
-from sqlalchemy import JSON
+# models.py
+# Student Survey Data Models
+# Author: Suryaprakash
+        # Jaya Krishna
+        # Karthik Reddy
+# Description: SQLModel database models for student survey application
+
 from typing import Optional, List
 from datetime import date
+from sqlmodel import Field, SQLModel, JSON, Column
 from enum import Enum
 
-class LikedMost(str, Enum):
-    """Enum for what student liked most about campus."""
-    students = "students"
-    location = "location"
-    campus = "campus"
-    atmosphere = "atmosphere"
-    dorm_rooms = "dorm rooms"
-    sports = "sports"
+class LikelihoodEnum(str, Enum):
+    VERY_LIKELY = "Very Likely"
+    LIKELY = "Likely"
+    UNLIKELY = "Unlikely"
 
-class InterestedIn(str, Enum):
-    """Enum for how student became interested in university."""
-    friends = "friends"
-    television = "television"
-    internet = "Internet"
-    other = "other"
-
-class Recommendation(str, Enum):
-    """Enum for likelihood of recommendation."""
-    very_likely = "Very Likely"
-    likely = "Likely"
-    unlikely = "Unlikely"
-
-class SurveyBase(SQLModel):
-    """Base model for Survey with all required fields."""
-    first_name: str = Field(..., min_length=1, description="First name of the student")
-    last_name: str = Field(..., min_length=1, description="Last name of the student")
-    street_address: str = Field(..., min_length=1, description="Street address")
-    city: str = Field(..., min_length=1, description="City")
-    state: str = Field(..., min_length=1, description="State")
-    zip: str = Field(..., min_length=5, description="ZIP code")
-    telephone: str = Field(..., min_length=10, description="Telephone number")
-    email: str = Field(..., description="Email address")
-    date_of_survey: date = Field(..., description="Date of survey")
-    liked_most: List[str] = Field(..., sa_column=Column(JSON), description="What they liked most (students, location, campus, atmosphere, dorm rooms, sports) - multiple selections allowed")
-    interested_in: InterestedIn = Field(..., description="How they became interested (friends, television, Internet, other)")
-    recommendation: Recommendation = Field(..., description="Likelihood of recommendation (Very Likely, Likely, Unlikely)")
-
-class Survey(SurveyBase, table=True):
-    """Survey model for database table."""
+class Survey(SQLModel, table=True):
+    """Student Survey Model representing survey data"""
     __tablename__ = "surveys"
     
     id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Required fields
+    first_name: str = Field(nullable=False)
+    last_name: str = Field(nullable=False)
+    street_address: str = Field(nullable=False)
+    city: str = Field(nullable=False)
+    state: str = Field(max_length=2, nullable=False)
+    zip_code: str = Field(max_length=10, nullable=False)
+    telephone: str = Field(max_length=20, nullable=False)
+    email: str = Field(nullable=False)
+    survey_date: date = Field(nullable=False)
+    
+    # Multiple choice fields (stored as JSON arrays)
+    liked_most: List[str] = Field(default=[], sa_column=Column(JSON))
+    # Options: students, location, campus, atmosphere, dorm_rooms, sports
+    
+    interested_how: List[str] = Field(default=[], sa_column=Column(JSON))
+    # Options: friends, television, internet, other
+    
+    likelihood: str = Field(nullable=False)
+    # Options: Very Likely, Likely, Unlikely
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "street_address": "123 Main St",
+                "city": "Fairfax",
+                "state": "VA",
+                "zip_code": "22030",
+                "telephone": "703-555-1234",
+                "email": "john.doe@example.com",
+                "survey_date": "2024-11-01",
+                "liked_most": ["campus", "students"],
+                "interested_how": ["friends", "internet"],
+                "likelihood": "Very Likely"
+            }
+        }
 
-class SurveyCreate(SurveyBase):
-    """Model for creating a new survey."""
-    pass
-
-class SurveyRead(SurveyBase):
-    """Model for reading survey data."""
-    id: int
+class SurveyCreate(SQLModel):
+    """Schema for creating a new survey"""
+    first_name: str
+    last_name: str
+    street_address: str
+    city: str
+    state: str
+    zip_code: str
+    telephone: str
+    email: str
+    survey_date: date
+    liked_most: List[str] = []
+    interested_how: List[str] = []
+    likelihood: str
 
 class SurveyUpdate(SQLModel):
-    """Model for updating survey data (all fields optional)."""
+    """Schema for updating an existing survey"""
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     street_address: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
-    zip: Optional[str] = None
+    zip_code: Optional[str] = None
     telephone: Optional[str] = None
     email: Optional[str] = None
-    date_of_survey: Optional[date] = None
+    survey_date: Optional[date] = None
     liked_most: Optional[List[str]] = None
-    interested_in: Optional[InterestedIn] = None
-    recommendation: Optional[Recommendation] = None
-
-
-
+    interested_how: Optional[List[str]] = None
+    likelihood: Optional[str] = None

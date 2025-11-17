@@ -1,100 +1,117 @@
-// Jenkins CI/CD pipeline for Student Survey application - SWE 645 Assignment 3
-// Team: Prakash, Jaya Krishna, Karthik Reddy
-// Builds Docker images for frontend and backend, then deploys to local Kubernetes cluster
+// Jenkinsfile
+// CI/CD Pipeline for Student Survey Application
+// Author: Suryaprakash
+        // Jaya Krishna
+        // Karthik Reddy
+// Description: Jenkins pipeline for building, testing, and deploying to Kubernetes
+
 pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_REPO = 'suryaprakashuppalapati'
-        BACKEND_IMAGE = "${DOCKER_HUB_REPO}/student-survey-backend"
-        FRONTEND_IMAGE = "${DOCKER_HUB_REPO}/student-survey-frontend"
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
+        DOCKER_HUB_REPO = 'your-dockerhub-username'
+        FRONTEND_IMAGE = "${DOCKER_HUB_REPO}/swe645-frontend"
+        BACKEND_IMAGE = "${DOCKER_HUB_REPO}/swe645-backend"
+        DOCKER_CREDENTIALS = 'docker-hub-credentials'
+        KUBECONFIG_CREDENTIALS = 'kubeconfig-credentials'
     }
     
     stages {
         stage('Checkout') {
             steps {
-                echo '========== Checking out code from GitHub =========='
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
         
-        stage('Build Backend Image') {
+        stage('Build Backend Docker Image') {
             steps {
-                echo '========== Building Backend Docker Image =========='
+                echo 'Building Backend Docker image...'
                 dir('backend') {
                     script {
-                        docker.build("${BACKEND_IMAGE}:${env.BUILD_NUMBER}")
+                        docker.build("${BACKEND_IMAGE}:${BUILD_NUMBER}")
                         docker.build("${BACKEND_IMAGE}:latest")
                     }
                 }
             }
         }
         
-        stage('Build Frontend Image') {
+        stage('Build Frontend Docker Image') {
             steps {
-                echo '========== Building Frontend Docker Image =========='
+                echo 'Building Frontend Docker image...'
                 dir('frontend') {
                     script {
-                        docker.build("${FRONTEND_IMAGE}:${env.BUILD_NUMBER}")
+                        docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}")
                         docker.build("${FRONTEND_IMAGE}:latest")
                     }
                 }
             }
         }
         
-        stage('Deploy MySQL to Kubernetes') {
+        stage('Push Docker Images') {
             steps {
-                echo '========== Deploying MySQL to Kubernetes =========='
+                echo 'Pushing Docker images to Docker Hub...'
                 script {
-                    bat 'kubectl apply -f k8s/mysql-deployment.yaml'
-                    bat 'kubectl wait --for=condition=ready pod -l app=mysql --timeout=300s || exit 0'
+                    docker.withRegistry('https://registry.hub.docker.com', DOCKER_CREDENTIALS) {
+                        docker.image("${BACKEND_IMAGE}:${BUILD_NUMBER}").push()
+                        docker.image("${BACKEND_IMAGE}:latest").push()
+                        docker.image("${FRONTEND_IMAGE}:${BUILD_NUMBER}").push()
+                        docker.image("${FRONTEND_IMAGE}:latest").push()
+                    }
                 }
             }
         }
         
-        stage('Deploy Backend to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
-                echo '========== Deploying Backend to Kubernetes =========='
-                script {
-                    bat 'kubectl apply -f k8s/backend-deployment.yaml'
-                    bat 'kubectl rollout status deployment/backend-deployment --timeout=300s'
-                }
-            }
-        }
-        
-        stage('Deploy Frontend to Kubernetes') {
-            steps {
-                echo '========== Deploying Frontend to Kubernetes =========='
-                script {
-                    bat 'kubectl apply -f k8s/frontend-deployment.yaml'
-                    bat 'kubectl rollout status deployment/frontend-deployment --timeout=300s'
+                echo 'Deploying to Kubernetes cluster...'
+                withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS, variable: 'KUBECONFIG')]) {
+                    sh '''
+                        # Apply MySQL deployment first
+                        kubectl apply -f k8s/mysql-deployment.yaml
+                        
+                        # Wait for MySQL to be ready
+                        kubectl wait --for=condition=ready pod -l app=mysql --timeout=120s
+                        
+                        # Apply backend deployment and service
+                        kubectl apply -f k8s/backend-deployment.yaml
+                        kubectl apply -f k8s/backend-service.yaml
+                        
+                        # Wait for backend to be ready
+                        kubectl wait --for=condition=ready pod -l app=backend --timeout=120s
+                        
+                        # Apply frontend deployment and service
+                        kubectl apply -f k8s/frontend-deployment.yaml
+                        kubectl apply -f k8s/frontend-service.yaml
+                        
+                        # Force rolling update to use latest images
+                        kubectl rollout restart deployment backend-deployment
+                        kubectl rollout restart deployment frontend-deployment
+                        
+                        # Check rollout status
+                        kubectl rollout status deployment backend-deployment
+                        kubectl rollout status deployment frontend-deployment
+                    '''
                 }
             }
         }
         
         stage('Verify Deployment') {
             steps {
-                echo '========== Verifying Kubernetes Deployment =========='
-                script {
-                    bat '''
-                        kubectl get pods
-                        kubectl get services
+                echo 'Verifying deployment...'
+                withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS, variable: 'KUBECONFIG')]) {
+                    sh '''
+                        echo "=== Deployment Status ==="
                         kubectl get deployments
-                    '''
-                }
-            }
-        }
-        
-        stage('Health Check') {
-            steps {
-                echo '========== Running Health Checks =========='
-                script {
-                    sleep(time: 10, unit: 'SECONDS')
-                    bat '''
-                        kubectl get pods -l app=mysql
-                        kubectl get pods -l app=backend
-                        kubectl get pods -l app=frontend
+                        
+                        echo "=== Pods Status ==="
+                        kubectl get pods
+                        
+                        echo "=== Services ==="
+                        kubectl get services
+                        
+                        echo "=== Frontend Service URL ==="
+                        kubectl get service frontend-service
                     '''
                 }
             }
@@ -103,19 +120,15 @@ pipeline {
     
     post {
         success {
-            echo '=========================================='
             echo 'Pipeline completed successfully!'
-            echo 'Application deployed to Kubernetes'
-            echo 'Access at: http://localhost'
-            echo '=========================================='
+            echo 'Application deployed to Kubernetes cluster.'
         }
         failure {
-            echo '=========================================='
-            echo 'Pipeline failed! Check logs for details.'
-            echo '=========================================='
+            echo 'Pipeline failed. Please check the logs.'
         }
         always {
-            echo 'Pipeline execution completed.'
+            echo 'Cleaning up workspace...'
+            cleanWs()
         }
     }
 }
