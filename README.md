@@ -1,41 +1,4 @@
-# Student Survey Application - SWE 645 Homework Assignment 3
 
-**Full Stack Application Development, Containerization, and Kubernetes Deployment with CI/CD Pipeline**
-
-## Team Members
-
-- Suryaprakash Uppalapati (G01515657)
-- Jaya Krishna Gobbila (G01512906)
-- Karthik Reddy Sanvelly (G01503115)
-
-## Team Member Contributions
-
-### Suryaprakash Uppalapati
-
-- FastAPI backend development with SQLModel/SQLAlchemy ORM
-- MySQL database schema design and integration
-- Kubernetes deployment manifests (backend, frontend, MySQL)
-- Jenkins CI/CD pipeline configuration and setup
-- Docker containerization for backend and frontend
-- Documentation and video demonstration
-
-### Jaya Krishna Gobbila
-
-- React.js frontend development and component architecture
-- Survey form implementation with validation
-- CRUD operations integration with backend APIs
-- Frontend Docker configuration and nginx setup
-- Testing and debugging across all application layers
-- README documentation and setup instructions
-
-### Karthik Reddy Sanvelly
-
-- Kubernetes cluster configuration and management
-- Database connection and environment configuration
-- CI/CD pipeline testing and optimization
-- Application deployment and health monitoring
-- Documentation of deployment procedures
-- Troubleshooting and bug fixes across the stack
 
 ## Project Overview
 
